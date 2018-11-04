@@ -1,24 +1,20 @@
 <?php
-/**
- * @copyright Copyright (c) 2018 Ivan Orlov
- * @license   https://github.com/demisang/yii2-dropbox-backup/blob/master/LICENSE
- * @link      https://github.com/demisang/yii2-dropbox-backup#readme
- * @author    Ivan Orlov <gnasimed@gmail.com>
- */
 
-namespace demi\backup\dropbox;
+namespace earx\backup\dropbox;
 
 use Yii;
 use yii\helpers\Console;
 use yii\console\Controller;
 use yii\base\InvalidConfigException;
-use \Dropbox as dbx;
+
+use Kunnu\Dropbox\DropboxApp;
+use Kunnu\Dropbox\Dropbox;
 
 /**
  * Console command for making backup and upload them to Dropbox
  *
- * @property-read \demi\backup\Component $component
- * @property-read dbx\Client $client
+ * @property \demi\backup\Component $component
+ * @property Dropbox $client
  */
 class BackupController extends Controller
 {
@@ -37,9 +33,9 @@ class BackupController extends Controller
      * @var string
      */
     public $dropboxAccessToken;
-    /** @var string Path in the dropbox where would be saved backups */
+    /** @var string Path in the bropbox where would be saved backups */
     public $dropboxUploadPath = '/';
-    /** @var bool if TRUE: will be deleted files in the dropbox when $expiryTime has come */
+    /** @var bool if TRUE: will be deleted files in the dropbox where $expiryTime has come */
     public $autoDelete = true;
     /**
      * Number of seconds after which the file is considered deprecated and will be deleted.
@@ -48,8 +44,12 @@ class BackupController extends Controller
      * @var int
      */
     public $expiryTime = 2592000;
-    /** @var dbx\Client Dropbox client instance */
+
+    /** @var Dropbox Dropbox client instance */
     protected $_client;
+
+    /** @var Dropbox Dropbox client instance */
+    protected $_app;
 
     /**
      * @inheritdoc
@@ -76,19 +76,13 @@ class BackupController extends Controller
         // Make new backup
         $backupFile = $this->component->create();
         // Get name for new dropbox file
-        $dropboxFile = basename($backupFile);
+        $dropboxFileName = basename($backupFile);
 
-        // Dropbox client instance
-        $client = $this->client;
+        $dropboxFile = new \Kunnu\Dropbox\DropboxFile($backupFile);
 
-        // Read backup file
-        $f = fopen($backupFile, "rb");
-        // Upload to dropbox
-        $client->uploadFile($this->dropboxUploadPath . $dropboxFile, dbx\WriteMode::add(), $f);
-        // Close backup file
-        fclose($f);
+        $file = $this->client->upload($dropboxFile, $this->dropboxUploadPath . $dropboxFileName, ['autorename' => true]);
 
-        $this->stdout('Backup file successfully uploaded into dropbox: ' . $dropboxFile . PHP_EOL, Console::FG_GREEN);
+        $this->stdout('Backup file successfully uploaded into dropbox: ' . $dropboxFileName . PHP_EOL, Console::FG_GREEN);
 
         if ($this->autoDelete) {
             // Auto removing files from dropbox that oldest of the expiry time
@@ -102,36 +96,35 @@ class BackupController extends Controller
     /**
      * Removing files from dropbox that oldest of the expiry time
      *
-     * @throws dbx\Exception_BadResponseCode
-     * @throws dbx\Exception_OverQuota
-     * @throws dbx\Exception_RetryLater
-     * @throws dbx\Exception_ServerError
+     * @throws DropboxClientException
      */
     public function actionDeleteJunk()
     {
         // Get all files from dropbox backups folder
-        $folderMetadata = $this->client->getMetadataWithChildren($this->dropboxUploadPath);
-        $files = $folderMetadata['contents'];
-
         // Calculate expired time
         $expiryDate = time() - $this->expiryTime;
 
-        foreach ($files as $key => $file) {
-            // Full path to dropbox file
-            $filepath = $file['path'];
-            // Dropbox file last modified time
-            $filetime = strtotime($file['modified']);
+        /** @var \Kunnu\Dropbox\ModelCollection $items */
+        $items = $this->client->listFolder($this->dropboxUploadPath)->getItems();
 
-            if (isset($file['is_dir']) && $file['is_dir']) {
-                continue;
-            } elseif (substr($filepath, -4) !== '.tar') {
+
+        /** @var \Kunnu\Dropbox\Models\FileMetadata $items */
+        foreach ($items as $item) {
+
+
+            $filepath = $item->getDataProperty('name');
+            // Dropbox file last modified time
+            $filetime = strtotime($item->getDataProperty('server_modified'));
+
+            if (substr($filepath, -4) !== '.tar') {
                 // Check extension
                 continue;
             }
 
             if ($filetime <= $expiryDate) {
+
                 // if the time has come - delete file
-                $this->client->delete($filepath);
+                $this->client->delete($this->dropboxUploadPath.$filepath);
                 $this->stdout('expired file was deleted from dropbox: ' . $filepath . PHP_EOL, Console::FG_YELLOW);
             }
         }
@@ -140,15 +133,32 @@ class BackupController extends Controller
     /**
      * Get instance of Dropbox client
      *
-     * @return dbx\Client
+     * @return DropboxApp
+     */
+    public function getApp()
+    {
+        if ($this->_app instanceof DropboxApp) {
+            return $this->_app;
+        }
+
+        $this->_app = new DropboxApp($this->dropboxAppKey, $this->dropboxAppSecret, $this->dropboxAccessToken);
+
+        return $this->_app;
+    }
+
+
+    /**
+     * Get instance of Dropbox client
+     *
+     * @return Dropbox
      */
     public function getClient()
     {
-        if ($this->_client instanceof dbx\Client) {
+        if ($this->_client instanceof Dropbox) {
             return $this->_client;
         }
 
-        return $this->_client = new dbx\Client($this->dropboxAccessToken, Yii::$app->name);
+        return $this->_client = $dropbox = new Dropbox($this->app);
     }
 
     /**

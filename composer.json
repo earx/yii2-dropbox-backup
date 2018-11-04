@@ -1,14 +1,21 @@
 {
-    "name": "demi/dropbox-backup",
+    "name": "earx/dropbox-backup",
     "description": "Yii2 console command for making site backups and upload it to your dropbox account",
-    "keywords": ["yii2", "dropbox", "backup", "upload", "sync", "dump"],
+    "keywords": [
+        "yii2",
+        "dropbox",
+        "backup",
+        "upload",
+        "sync",
+        "dump"
+    ],
     "homepage": "https://github.com/demisang/yii2-dropbox-backup#readme",
     "type": "yii2-extension",
-    "license": "GPL-3.0-or-later",
+    "license": "GNU",
     "authors": [
         {
             "name": "Ivan Orlov",
-            "email": "gnasimed@gmail.com",
+            "email": "orlov_mail@mail.ru",
             "homepage": "https://orlov.io/",
             "role": "Creator"
         }
@@ -19,22 +26,19 @@
     },
     "repositories": [
         {
-            "type": "git",
-            "url": "https://github.com/demisang/dropbox-sdk-php.git"
+            "type": "vcs",
+            "url": "https://github.com/kunalvarma05/dropbox-php-sdk"
         }
     ],
     "require": {
         "php": ">=5.4.0",
         "yiisoft/yii2": "*",
         "demi/backup": "*",
-        "dropbox/dropbox-sdk": "<=1.1.8"
-    },
-    "suggest": {
-        "php-64bit": "The Dropbox SDK uses 64-bit integers, this could cause problems because some of the numbers (file sizes, quota, etc) can be larger than 32-bit ints can handle. http://stackoverflow.com/a/864402"
+        "kunalvarma05/dropbox-php-sdk": "^0.2"
     },
     "autoload": {
         "psr-4": {
-            "demi\\backup\\dropbox\\": ""
+            "earx\\backup\\dropbox\\": ""
         }
     }
 }
