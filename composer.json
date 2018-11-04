@@ -14,10 +14,9 @@
     "license": "GNU",
     "authors": [
         {
-            "name": "Ivan Orlov",
-            "email": "orlov_mail@mail.ru",
-            "homepage": "https://orlov.io/",
-            "role": "Creator"
+            "name": "Evgeny Bartashevich, based on Ivan Orlov code",
+            "email": "earx@yandex.ru",
+            "role": "Updater"
         }
     ],
     "support": {

@@ -15,7 +15,7 @@ Add to composer.json in your project
 ```json
 {
 	"require": {
-  		"demi/dropbox-backup": "~1.0"
+  		"earx/dropbox-backup": "*"
 	}
 }
 ```
