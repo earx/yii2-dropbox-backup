@@ -9,7 +9,7 @@
         "sync",
         "dump"
     ],
-    "homepage": "https://github.com/demisang/yii2-dropbox-backup#readme",
+    "homepage": "https://github.com/earx/yii2-dropbox-backup#readme",
     "type": "yii2-extension",
     "license": "GNU",
     "authors": [
@@ -20,8 +20,8 @@
         }
     ],
     "support": {
-        "issues": "https://github.com/demisang/yii2-dropbox-backup/issues",
-        "source": "https://github.com/demisang/yii2-dropbox-backup"
+        "issues": "https://github.com/earx/yii2-dropbox-backup/issues",
+        "source": "https://github.com/earx/yii2-dropbox-backup"
     },
     "repositories": [
         {

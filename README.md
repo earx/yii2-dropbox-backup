@@ -6,7 +6,7 @@ Installation
 ---
 Run
 ```code
-php composer.phar require "demi/dropbox-backup" "~1.0"
+php composer.phar require "earx/dropbox-backup"
 ```
 or
 
