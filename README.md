@@ -4,6 +4,18 @@ Yii2 console command for making site backups and upload it to your dropbox accou
 
 Installation
 ---
+
+Add to composer.json in your project
+```json
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/earx/yii2-dropbox-backup"
+        }
+    ]
+}
+```
 Run
 ```code
 php composer.phar require "earx/dropbox-backup"
